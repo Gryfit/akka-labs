@@ -12,11 +12,11 @@ import scala.concurrent.duration._
 
 class OrderManagerIntegrationTest
   extends TestKit(ActorSystem("OrderManagerIntegrationTest"))
-  with FlatSpecLike
-  with ImplicitSender
-  with BeforeAndAfterAll
-  with Matchers
-  with ScalaFutures {
+    with FlatSpecLike
+    with ImplicitSender
+    with BeforeAndAfterAll
+    with Matchers
+    with ScalaFutures{
 
   implicit val timeout: Timeout = 1.second
 
@@ -25,8 +25,9 @@ class OrderManagerIntegrationTest
     def sendMessage(
       orderManager: TestActorRef[OrderManager],
       message: OrderManager.Command
-    ): Unit =
+    ): Unit = {
       (orderManager ? message).mapTo[OrderManager.Ack].futureValue shouldBe Done
+    }
 
     val orderManager = TestActorRef(new OrderManager())
 
@@ -42,3 +43,4 @@ class OrderManagerIntegrationTest
   }
 
 }
+
