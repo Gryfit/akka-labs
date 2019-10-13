@@ -18,9 +18,9 @@ class CheckoutFSMTest
     TestKit.shutdownActorSystem(system)
   import CheckoutFSMTest._
 
-  val cartActorStub = TestProbe().ref
+  val cartActorStub  = TestProbe().ref
   val deliveryMethod = "post"
-  val paymentMethod = "paypal"
+  val paymentMethod  = "paypal"
 
   it should "be in selectingDelivery state after checkout start" in {
     val checkoutActor = checkoutActorWithResponseOnStateChange(system)(cartActorStub)
@@ -87,9 +87,9 @@ class CheckoutFSMTest
     checkoutActor ! SelectDeliveryMethod(deliveryMethod)
     expectMsg(selectingPaymentMethodMsg)
     checkoutActor ! SelectPayment(paymentMethod)
-    fishForMessage(){
+    fishForMessage() {
       case m: String if m == processingPaymentMsg => true
-      case _ : PaymentStarted => false
+      case _: PaymentStarted                      => false
     }
   }
 
@@ -101,9 +101,9 @@ class CheckoutFSMTest
     checkoutActor ! SelectDeliveryMethod(deliveryMethod)
     expectMsg(selectingPaymentMethodMsg)
     checkoutActor ! SelectPayment(paymentMethod)
-    fishForMessage(){
+    fishForMessage() {
       case m: String if m == processingPaymentMsg => true
-      case _ : PaymentStarted => false
+      case _: PaymentStarted                      => false
     }
     checkoutActor ! CancelCheckout
     expectMsg(cancelledMsg)
@@ -115,8 +115,8 @@ class CheckoutFSMTest
     checkoutActor ! StartCheckout
     checkoutActor ! SelectDeliveryMethod(deliveryMethod)
     checkoutActor ! SelectPayment(paymentMethod)
-    fishForMessage(){
-      case _ : PaymentStarted => true
+    fishForMessage() {
+      case _: PaymentStarted => true
     }
     Thread.sleep(3000)
     checkoutActor ! ReceivePayment
@@ -131,9 +131,9 @@ class CheckoutFSMTest
     checkoutActor ! SelectDeliveryMethod(deliveryMethod)
     expectMsg(selectingPaymentMethodMsg)
     checkoutActor ! SelectPayment(paymentMethod)
-    fishForMessage(){
+    fishForMessage() {
       case m: String if m == processingPaymentMsg => true
-      case _ : PaymentStarted => false
+      case _: PaymentStarted                      => false
     }
     checkoutActor ! ReceivePayment
     expectMsg(closedMsg)
@@ -147,9 +147,9 @@ class CheckoutFSMTest
     checkoutActor ! SelectDeliveryMethod(deliveryMethod)
     expectMsg(selectingPaymentMethodMsg)
     checkoutActor ! SelectPayment(paymentMethod)
-    fishForMessage(){
+    fishForMessage() {
       case m: String if m == processingPaymentMsg => true
-      case _ : PaymentStarted => false
+      case _: PaymentStarted                      => false
     }
     checkoutActor ! ReceivePayment
     expectMsg(closedMsg)
