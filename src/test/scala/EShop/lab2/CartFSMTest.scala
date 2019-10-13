@@ -54,11 +54,11 @@ class CartFSMTest
     expectMsg(nonEmptyMsg)
     expectMsg(0)
     cart ! StartCheckout
-    fishForMessage(){
+    fishForMessage() {
       case m: String if m == inCheckoutMsg => true
-      case _ :CheckoutStarted => false
+      case _: CheckoutStarted              => false
     }
-    fishForMessage(){ case 1 => true }
+    fishForMessage() { case 1 => true }
   }
 
   it should "cancel checkout properly" in {
@@ -68,9 +68,9 @@ class CartFSMTest
     expectMsg(nonEmptyMsg)
     expectMsg(0)
     cart ! StartCheckout
-    fishForMessage(){
+    fishForMessage() {
       case m: String if m == inCheckoutMsg => true
-      case _ :CheckoutStarted => false
+      case _: CheckoutStarted              => false
     }
     expectMsg(1)
     cart ! CancelCheckout
@@ -85,9 +85,9 @@ class CartFSMTest
     expectMsg(nonEmptyMsg)
     expectMsg(0)
     cart ! StartCheckout
-    fishForMessage(){
+    fishForMessage() {
       case m: String if m == inCheckoutMsg => true
-      case _ :CheckoutStarted => false
+      case _: CheckoutStarted              => false
     }
     expectMsg(1)
     cart ! CloseCheckout
@@ -102,9 +102,9 @@ class CartFSMTest
     expectMsg(nonEmptyMsg)
     expectMsg(0)
     cart ! StartCheckout
-    fishForMessage(){
+    fishForMessage() {
       case m: String if m == inCheckoutMsg => true
-      case _ :CheckoutStarted => false
+      case _: CheckoutStarted              => false
     }
     expectMsg(1)
     cart ! AddItem("Henryk V")
