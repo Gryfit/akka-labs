@@ -1,6 +1,7 @@
 package EShop.lab2
 
-import EShop.lab2.CartActor.{AddItem, CancelCheckout, CloseCheckout, ExpireCart, RemoveItem, StartCheckout}
+import EShop.lab2.CartActor.{AddItem, CancelCheckout, CloseCheckout, ExpireCart, GetItems, RemoveItem, StartCheckout}
+import EShop.lab3.OrderManager.{Empty, InCheckoutData}
 import akka.actor.{Actor, ActorRef, Cancellable, Props}
 import akka.event.{Logging, LoggingReceive}
 
@@ -49,6 +50,7 @@ class CartActor extends Actor {
       context.become(nonEmpty(newCart, scheduleTimer))
     case RemoveItem(item) if cart.size == 1 && cart.contains(item) =>
       timer.cancel()
+      context.sender() ! Empty
       context.unbecome()
     case RemoveItem(item) if cart.size > 1 =>
       val newCart = cart.removeItem(item)
@@ -56,10 +58,16 @@ class CartActor extends Actor {
       context.become(nonEmpty(newCart, scheduleTimer))
     case ExpireCart =>
       timer.cancel()
+      context.sender() ! Empty
       context.unbecome()
     case StartCheckout =>
       timer.cancel()
+      val checkout = context.actorOf(Checkout.props(context.self), "checkout")
+      import EShop.lab2.Checkout.StartCheckout
+      checkout ! StartCheckout
+      context.sender() ! CartActor.CheckoutStarted(checkout)
       context.become(inCheckout(cart))
+    case GetItems => sender() ! cart.items
   }
 
   def inCheckout(cart: Cart): Receive = LoggingReceive {
@@ -67,6 +75,7 @@ class CartActor extends Actor {
       context.become(nonEmpty(cart, scheduleTimer))
     case CloseCheckout =>
       context.become(empty)
+    case GetItems => sender() ! cart.items
   }
 
 }

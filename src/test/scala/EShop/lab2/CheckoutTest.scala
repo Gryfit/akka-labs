@@ -62,7 +62,7 @@ class CheckoutTest
   }
 
   it should "be in cancelled state after cancel message received in selectingPayment State" in {
-    val checkoutActor = checkoutActorWithResponseOnStateChange(system)
+    val checkoutActor = checkoutActorWithResponseOnStateChange(system)(cartActor)
 
     checkoutActor ! StartCheckout
     expectMsg(selectingDeliveryMsg)

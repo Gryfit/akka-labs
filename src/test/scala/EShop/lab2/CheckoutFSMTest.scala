@@ -13,7 +13,6 @@ class CheckoutFSMTest
   with ImplicitSender
   with BeforeAndAfterAll {
 
-
   override def afterAll: Unit =
     TestKit.shutdownActorSystem(system)
   import CheckoutFSMTest._
