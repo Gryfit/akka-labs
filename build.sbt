@@ -13,7 +13,9 @@ libraryDependencies ++= Seq(
   "org.iq80.leveldb"            % "leveldb"          % "0.9",
   "org.fusesource.leveldbjni"   % "leveldbjni-all"   % "1.8",
   "com.github.dnvriend" %% "akka-persistence-inmemory" % "2.5.15.2",
-  "org.scalatest" %% "scalatest" % "3.0.8" % "test")
+  "org.scalatest" %% "scalatest" % "3.0.8" % "test",
+  "org.typelevel" %% "cats-core" % "2.0.0"
+)
 
 
 // scalaFmt

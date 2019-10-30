@@ -51,10 +51,13 @@ class CartFSM extends LoggingFSM[Status.Value, Cart] {
       val checkout = context.actorOf(CheckoutFSM.props(context.self), "checkout")
       import EShop.lab2.Checkout.StartCheckout
       checkout ! StartCheckout
-      context.sender() ! CartActor.CheckoutStarted(checkout)
+      context.sender() ! CartActor.CheckoutStarted(checkout, cart)
       goto(InCheckout) using cart
     case Event(GetItems, cart: Cart) =>
       sender() ! cart.items
+      stay()
+    case Event(GetCart, cart: Cart) =>
+      sender() ! cart
       stay()
   }
 

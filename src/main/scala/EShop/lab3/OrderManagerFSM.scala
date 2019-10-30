@@ -1,7 +1,7 @@
 package EShop.lab3
 
 import EShop.lab2.{CartActor, CartFSM, Checkout}
-import EShop.lab2.CartActor.CancelCheckout
+import EShop.lab2.CartActor.{CancelCheckout, GetCart}
 import EShop.lab3.OrderManager._
 import akka.actor.{FSM, LoggingFSM, Props}
 
@@ -36,7 +36,7 @@ class OrderManagerFSM extends LoggingFSM[State, Data] {
   }
 
   when(InCheckout) {
-    case Event(CartActor.CheckoutStarted(checkoutRef), CartDataWithSender(cartRef, senderRef)) =>
+    case Event(CartActor.CheckoutStarted(checkoutRef, cart), CartDataWithSender(cartRef, senderRef)) =>
       senderRef ! Done
       goto(InCheckout) using InCheckoutData(checkoutRef)
     case Event(SelectDeliveryAndPaymentMethod(delivery, payment), InCheckoutData(checkoutRef)) =>

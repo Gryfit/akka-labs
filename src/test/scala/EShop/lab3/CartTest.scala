@@ -1,6 +1,6 @@
 package EShop.lab3
 
-import EShop.lab2.CartActor
+import EShop.lab2.{Cart, CartActor}
 import EShop.lab2.CartActor._
 import EShop.lab2.CartActorTest.emptyMsg
 import akka.actor.ActorSystem
@@ -42,6 +42,7 @@ class CartTest
   it should "start checkout" in {
     val cart = TestActorRef(new CartActor())
     cart ! AddItem("Test1")
-    (cart ? StartCheckout).futureValue shouldBe CartActor.CheckoutStarted(cart.children.head)
+    val c = (cart ? GetCart).mapTo[Cart].futureValue
+    (cart ? StartCheckout).futureValue shouldBe CartActor.CheckoutStarted(cart.children.head, c)
   }
 }

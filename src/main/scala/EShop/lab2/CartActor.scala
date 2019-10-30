@@ -1,6 +1,15 @@
 package EShop.lab2
 
-import EShop.lab2.CartActor.{AddItem, CancelCheckout, CloseCheckout, ExpireCart, GetItems, RemoveItem, StartCheckout}
+import EShop.lab2.CartActor.{
+  AddItem,
+  CancelCheckout,
+  CloseCheckout,
+  ExpireCart,
+  GetCart,
+  GetItems,
+  RemoveItem,
+  StartCheckout
+}
 import EShop.lab3.OrderManager.{Empty, InCheckoutData}
 import akka.actor.{Actor, ActorRef, Cancellable, Props}
 import akka.event.{Logging, LoggingReceive}
@@ -19,6 +28,7 @@ object CartActor {
   case object CancelCheckout       extends Command
   case object CloseCheckout        extends Command
   case object GetItems             extends Command // command made to make testing easier
+  case object GetCart              extends Command // command made to make testing easier
 
   sealed trait Event
   case class CheckoutStarted(checkoutRef: ActorRef, cart: Cart) extends Event
@@ -71,9 +81,10 @@ class CartActor extends Actor {
       val checkout = context.actorOf(Checkout.props(context.self), "checkout")
       import EShop.lab2.Checkout.StartCheckout
       checkout ! StartCheckout
-      context.sender() ! CartActor.CheckoutStarted(checkout)
+      context.sender() ! CartActor.CheckoutStarted(checkout, cart)
       context.become(inCheckout(cart))
     case GetItems => sender() ! cart.items
+    case GetCart  => sender() ! cart
   }
 
   def inCheckout(cart: Cart): Receive = LoggingReceive {
