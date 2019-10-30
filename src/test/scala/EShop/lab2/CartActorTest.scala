@@ -1,6 +1,7 @@
 package EShop.lab2
 
 import EShop.lab2.CartActor._
+import EShop.lab3.OrderManager.Empty
 import akka.actor.{ActorRef, ActorSystem, Cancellable, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike}
@@ -47,6 +48,7 @@ class CartActorTest
     expectMsg(nonEmptyMsg)
     expectMsg(1)
     cart ! RemoveItem("Storm")
+    expectMsg(Empty)
     expectMsg(emptyMsg)
     expectMsg(0)
   }

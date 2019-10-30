@@ -5,6 +5,7 @@ import EShop.lab2.CartFSM.Status._
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike}
+import EShop.lab2.CartFSM.Status._
 
 class CartFSMTest
   extends TestKit(ActorSystem("CartFSMTest"))
@@ -32,6 +33,7 @@ class CartFSMTest
     expectMsg(nonEmptyMsg)
     expectMsg(0)
     cart ! RemoveItem("Storm")
+    expectMsg(EShop.lab3.OrderManager.Empty)
     expectMsg(emptyMsg)
     expectMsg(1)
   }

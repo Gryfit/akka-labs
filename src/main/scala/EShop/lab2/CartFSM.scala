@@ -35,14 +35,27 @@ class CartFSM extends LoggingFSM[Status.Value, Cart] {
   when(NonEmpty, stateTimeout = cartTimerDuration) {
     case Event(AddItem(item), c: Cart) =>
       stay using c.addItem(item)
-    case Event(RemoveItem(item), cart: Cart) if cart.size == 1 && cart.contains(item) =>
-      goto(Empty) using Cart.empty
-    case Event(RemoveItem(item), cart: Cart) =>
+    case Event(RemoveItem(item), cart: Cart) if cart.size == 1 && cart.contains(item) => {
+      import EShop.lab3.OrderManager.Empty
+      context.sender() ! Empty
+    }
+    goto(Empty) using Cart.empty
+  case Event(RemoveItem(item), cart: Cart) =>
       stay using cart.removeItem(item)
-    case Event(StateTimeout, _) =>
-      goto(Empty) using Cart.empty
-    case Event(StartCheckout, cart: Cart) =>
+    case Event(StateTimeout, _) => {
+      import EShop.lab3.OrderManager.Empty
+      context.sender() ! Empty
+    }
+    goto(Empty) using Cart.empty
+  case Event(StartCheckout, cart: Cart) =>
+      val checkout = context.actorOf(CheckoutFSM.props(context.self), "checkout")
+      import EShop.lab2.Checkout.StartCheckout
+      checkout ! StartCheckout
+      context.sender() ! CartActor.CheckoutStarted(checkout)
       goto(InCheckout) using cart
+    case Event(GetItems, cart: Cart) =>
+      sender() ! cart.items
+      stay()
   }
 
   when(InCheckout) {
