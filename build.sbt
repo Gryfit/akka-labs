@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   "com.github.dnvriend" %% "akka-persistence-inmemory" % "2.5.15.2",
   "com.typesafe.akka"         %% "akka-http"                 % akkaHttpVersion,
   "com.typesafe.akka"         %% "akka-http-spray-json"      % akkaHttpVersion,
-  "org.scalatest" %% "scalatest" % "3.0.8" % "test"),
+  "org.scalatest" %% "scalatest" % "3.0.8" % "test",
   "org.typelevel" %% "cats-core" % "2.0.0"
 )
 
