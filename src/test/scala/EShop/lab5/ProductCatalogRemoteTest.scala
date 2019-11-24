@@ -1,5 +1,7 @@
 package EShop.lab5
-import akka.actor.ActorSystem
+import java.net.InetAddress
+
+import akka.actor.{ActorSystem, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider}
 import akka.pattern.ask
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
@@ -17,20 +19,33 @@ class ProductCatalogRemoteTest extends AsyncFlatSpec with Matchers {
     val query  = GetItems("gerber", List("cream"))
 
     val actorSystem = ActorSystem("ProductCatalog", config.getConfig("productcatalog").withFallback(config))
-    actorSystem.actorOf(ProductCatalog.props(new SearchService()), "productcatalog")
+    val actor       = actorSystem.actorOf(ProductCatalog.props(new SearchService()), "productcatalog")
+    val remoteAddr  = RemoteAddressExtension(actorSystem).address
+    val remotePath  = actor.path.toStringWithAddress(remoteAddr)
+
+    println("ADDR:\t " + remoteAddr + "\t remotePath:\t" + remotePath)
+
+
 
     val anotherActorSystem = ActorSystem("another")
-    val productCatalog =
-      anotherActorSystem.actorSelection("akka.tcp://ProductCatalog@127.0.0.1:2554/user/productcatalog")
+    val productCatalog = anotherActorSystem.actorSelection(remotePath)
 
     for {
       productCatalogActorRef <- productCatalog.resolveOne()
       items                  <- (productCatalogActorRef ? query).mapTo[ProductCatalog.Items]
-      _                      <- actorSystem.terminate()
-      _                      <- anotherActorSystem.terminate()
     } yield {
       assert(items.items.size == 10)
     }
+  }
+
+  class RemoteAddressExtensionImpl(system: ExtendedActorSystem) extends Extension {
+    def address = system.provider.getDefaultAddress
+  }
+
+  object RemoteAddressExtension extends ExtensionId[RemoteAddressExtensionImpl] with ExtensionIdProvider {
+    override def lookup                                               = RemoteAddressExtension
+    override def createExtension(system: ExtendedActorSystem)         = new RemoteAddressExtensionImpl(system)
+    override def get(system: ActorSystem): RemoteAddressExtensionImpl = super.get(system)
   }
 
 }
