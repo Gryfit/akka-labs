@@ -3,6 +3,7 @@ import java.net.URI
 import java.util.zip.GZIPInputStream
 
 import akka.actor.{Actor, ActorSystem, Props}
+import akka.event.Logging
 import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.Await
@@ -54,18 +55,37 @@ object ProductCatalog {
 
   sealed trait Ack
   case class Items(items: List[Item]) extends Ack
-
+  object Items {
+    def toAPI(items: Items): API.Items = {
+      API.Items(
+        items.items.map(
+          item =>
+            API.Item(
+              id = item.id.toString,
+              name = item.name,
+              brand = item.brand,
+              price = item.price,
+              count = item.count
+          )
+        )
+      )
+    }
+  }
   def props(searchService: SearchService): Props =
     Props(new ProductCatalog(searchService))
 }
 
 class ProductCatalog(searchService: SearchService) extends Actor {
+  private val log = Logging(context.system, this)
 
   import ProductCatalog._
 
   override def receive: Receive = {
     case GetItems(brand, productKeyWords) =>
-      sender() ! Items(searchService.search(brand, productKeyWords))
+      log.warning(brand.toString + "  ,   " + productKeyWords)
+      val items = Items(searchService.search(brand, productKeyWords))
+      log.warning(items.toString)
+      sender() ! items
   }
 }
 
