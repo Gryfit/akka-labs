@@ -1,6 +1,8 @@
 package EShop.lab3
 
-import akka.actor.{Actor, ActorRef, Props}
+import EShop.lab2.Checkout.ReceivePayment
+import EShop.lab3.Payment.{DoPayment, PaymentConfirmed}
+import akka.actor.{Actor, ActorRef, PoisonPill, Props}
 
 object Payment {
 
@@ -27,6 +29,12 @@ class Payment(
   checkout: ActorRef
 ) extends Actor {
 
-  override def receive: Receive = ???
+  override def receive: Receive = {
+    case DoPayment =>
+      println("PAYMENT DONE")
+      sender() ! PaymentConfirmed
+      checkout ! ReceivePayment
+      self ! PoisonPill
+  }
 
 }

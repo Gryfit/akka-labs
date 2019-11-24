@@ -1,7 +1,10 @@
 package EShop.lab3
 
+import EShop.lab2.CartActor.{CancelCheckout, StartCheckout}
+import EShop.lab2.Checkout.CheckOutClosed
 import EShop.lab2.{CartActor, Checkout}
 import EShop.lab3.OrderManager._
+import EShop.lab3.Payment.DoPayment
 import akka.actor.{Actor, ActorRef, Props}
 import akka.event.LoggingReceive
 
@@ -31,37 +34,65 @@ object OrderManager {
   case class InCheckoutDataWithSender(checkoutRef: ActorRef, sender: ActorRef) extends Data
   case class InPaymentData(paymentRef: ActorRef)                               extends Data
   case class InPaymentDataWithSender(paymentRef: ActorRef, sender: ActorRef)   extends Data
-
-  def props = Props(new OrderManager)
 }
 
 class OrderManager extends Actor {
 
   override def receive = uninitialized
 
-  def uninitialized: Receive = ???
-
-  def open(cartActor: ActorRef): Receive = ???
-
-  def inCheckout(cartActorRef: ActorRef, senderRef: ActorRef): Receive = {
-    case CartActor.CheckoutStarted(checkoutRef, cart) => ???
+  def uninitialized: Receive = LoggingReceive {
+    case AddItem(id: String) =>
+      val cartRef = context.actorOf(Props[CartActor], "cart")
+      import EShop.lab2.CartActor.AddItem
+      cartRef ! AddItem(id)
+      sender() ! Done
+      context.become(open(cartRef))
   }
 
-  def inCheckout(checkoutActorRef: ActorRef): Receive = {
-    case SelectDeliveryAndPaymentMethod(delivery, payment) => ???
+  def open(cartActor: ActorRef): Receive = LoggingReceive {
+    case Empty =>
+      context.unbecome()
+    case RemoveItem(id: String) =>
+      cartActor ! RemoveItem(id)
+      sender() ! Done
+    case AddItem(id: String) =>
+      cartActor ! AddItem(id)
+      sender() ! Done
+    case Buy =>
+      cartActor ! StartCheckout
+      context.become(inCheckout(cartActor, sender()))
   }
 
-  def inPayment(senderRef: ActorRef): Receive = {
-    case Checkout.PaymentStarted(paymentRef) => ???
-
+  def inCheckout(cartActorRef: ActorRef, senderRef: ActorRef): Receive = LoggingReceive {
+    case CartActor.CheckoutStarted(checkoutRef, cart) =>
+      senderRef ! Done
+      context.become(inCheckout(checkoutRef))
   }
 
-  def inPayment(paymentActorRef: ActorRef, senderRef: ActorRef): Receive = {
-    case Pay                      => ???
-    case Payment.PaymentConfirmed => ???
+  def inCheckout(checkoutActorRef: ActorRef): Receive = LoggingReceive {
+    case SelectDeliveryAndPaymentMethod(delivery, payment) =>
+      checkoutActorRef ! Checkout.SelectDeliveryMethod(delivery)
+      checkoutActorRef ! Checkout.SelectPayment(payment)
+      context.become(inPayment(sender()))
+    case CancelCheckout =>
+      context.become(open(context.child("cart").get))
   }
 
-  def finished: Receive = {
+  def inPayment(senderRef: ActorRef): Receive = LoggingReceive {
+    case Checkout.PaymentStarted(paymentRef) =>
+      senderRef ! Done
+      context.become(inPayment(paymentRef, senderRef))
+  }
+
+  def inPayment(paymentActorRef: ActorRef, senderRef: ActorRef): Receive = LoggingReceive {
+    case Pay =>
+      paymentActorRef ! DoPayment
+      context.become(inPayment(paymentActorRef, sender()))
+    case Payment.PaymentConfirmed =>
+      context.become(finished)
+      senderRef ! Done
+  }
+  def finished: Receive = LoggingReceive {
     case _ => sender ! "order manager finished job"
   }
 }

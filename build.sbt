@@ -23,6 +23,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka"         %% "akka-http-spray-json"      % akkaHttpVersion,
   "org.scalatest" %% "scalatest" % "3.0.8" % "test",
   "io.gatling"                % "gatling-http"               % "3.2.1",
+  "org.typelevel" %% "cats-core" % "2.0.0"
 )
 
 libraryDependencies += "io.gatling.highcharts" % "gatling-charts-highcharts" % "3.2.1" % "test,it"
@@ -30,3 +31,5 @@ libraryDependencies += "io.gatling"            % "gatling-test-framework"    % "
 
 // scalaFmt
 scalafmtOnCompile := true
+
+parallelExecution in Test := false

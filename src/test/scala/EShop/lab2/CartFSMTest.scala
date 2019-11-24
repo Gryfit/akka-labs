@@ -32,6 +32,7 @@ class CartFSMTest
     expectMsg(nonEmptyMsg)
     expectMsg(0)
     cart ! RemoveItem("Storm")
+    expectMsg(EShop.lab3.OrderManager.Empty)
     expectMsg(emptyMsg)
     expectMsg(1)
   }
