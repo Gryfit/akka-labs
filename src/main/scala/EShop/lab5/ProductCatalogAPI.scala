@@ -1,8 +1,6 @@
 package EShop.lab5
 
-import EShop.lab5.API.Query
 import EShop.lab5.ProductCatalog.{GetItems, Items}
-import EShop.lab5.ProductCatalogApp.config
 import akka.actor.{Actor, ActorRef, ActorSelection, ActorSystem, Props}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.server.{HttpApp, Route}
@@ -14,6 +12,9 @@ import spray.json.DefaultJsonProtocol
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import akka.actor.{Address, AddressFromURIString}
+import akka.remote.routing.RemoteRouterConfig
+import akka.routing.RoundRobinPool
 
 object API {
   case class Query(brand: String, keyWords: List[String])
@@ -36,9 +37,13 @@ class APIServer extends HttpApp with APIFormatter {
   private val config = ConfigFactory.load()
   val APIActorSystem = ActorSystem("api", config.getConfig("api").withFallback(config))
 
-  val productCatalog: ActorSelection =
-    APIActorSystem.actorSelection("akka.tcp://ProductCatalog@127.0.0.1:2553/user/productcatalog")
-  val APIHandler: ActorRef              = APIActorSystem.actorOf(Props(new APIHandler(productCatalog)), "handler")
+  val addresses =
+    Seq(AddressFromURIString("akka.tcp://ProductCatalog@127.0.0.1:2553"))
+  val routerRemote = APIActorSystem.actorOf(
+    RemoteRouterConfig(RoundRobinPool(2), addresses).props(ProductCatalog.props(new SearchService()))
+  )
+
+  val APIHandler: ActorRef              = APIActorSystem.actorOf(Props(new APIHandler(routerRemote)), "handler")
   private implicit val timeout: Timeout = Timeout(10 seconds)
   override protected def routes: Route = {
     path("find-item") {
@@ -50,7 +55,7 @@ class APIServer extends HttpApp with APIFormatter {
     }
   }
 }
-class APIHandler(productCatalog: ActorSelection) extends Actor {
+class APIHandler(productCatalog: ActorRef) extends Actor {
   private implicit val timeout: Timeout     = Timeout(5 seconds)
   private implicit val ec: ExecutionContext = context.dispatcher
 
@@ -60,7 +65,6 @@ class APIHandler(productCatalog: ActorSelection) extends Actor {
       for {
         value <- (productCatalog ? GetItems(q.brand, q.keyWords)).mapTo[Items]
         response = Items.toAPI(value)
-        _        = println(response)
       } yield http ! response
   }
 }

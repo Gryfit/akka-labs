@@ -82,9 +82,7 @@ class ProductCatalog(searchService: SearchService) extends Actor {
 
   override def receive: Receive = {
     case GetItems(brand, productKeyWords) =>
-      log.warning(brand.toString + "  ,   " + productKeyWords)
       val items = Items(searchService.search(brand, productKeyWords))
-      log.warning(items.toString)
       sender() ! items
   }
 }

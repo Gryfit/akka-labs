@@ -1,11 +1,14 @@
 [
   {
-    "work": "first work to do"
+    "brand": "Fanta",
+    "keyWords": []
   },
   {
-    "work": "some other work to do"
+    "brand": "Slim-Fast",
+    "keyWords": []
   },
   {
-    "work": "yet another"
+    "brand": "Bosch",
+    "keyWords": []
   }
 ]
